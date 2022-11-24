@@ -12,4 +12,4 @@ app.get('/',async(req,res)=>{
 res.send('reread server is running')
 
 })
-app.listen(port,()=>console.log(`Reread running on ${port}`))
+app.listen(port,()=>console.log(`Reread running on port ${port}`))
