@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1mua1t2.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -45,6 +45,26 @@ async function run (){
             res.send(result)
         })
 
+        app.get('/users/allbuyer',async(req,res)=>
+        {
+            const query = {role:'User'}
+            const user = await usersCollection.find(query).toArray()
+           res.send(user)
+           
+        })
+
+      
+
+        app.get('/users/allseller',async(req,res)=>
+        {
+            const query = {role:'Seller'}
+            const user = await usersCollection.find(query).toArray()
+           res.send(user)
+          
+        })
+
+       
+
         app.get('/users/admin/:email',async(req,res)=>
         {
             const email = req.params.email
@@ -68,6 +88,23 @@ async function run (){
             res.send({ isSeller :user?.role ==='Seller' })
         })
 
+        app.delete('/users/allbuyer/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id:ObjectId(id)};
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+            console.log(result)
+        })
+        
+        app.delete('/users/allseller/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id:ObjectId(id)};
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+            console.log(result)
+        })
+        
+      
     }
     finally{
 
