@@ -53,8 +53,6 @@ async function run (){
            
         })
 
-      
-
         app.get('/users/allseller',async(req,res)=>
         {
             const query = {role:'Seller'}
@@ -62,8 +60,6 @@ async function run (){
            res.send(user)
           
         })
-
-       
 
         app.get('/users/admin/:email',async(req,res)=>
         {
@@ -86,7 +82,7 @@ async function run (){
             const filter = { _id:ObjectId(id)};
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
-            console.log(result)
+        
         })
         
         app.delete('/users/allseller/:id', async (req, res) => {
@@ -94,7 +90,7 @@ async function run (){
             const filter = { _id:ObjectId(id)};
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
-            console.log(result)
+          
         })
         app.post('/allbooks',async(req,res)=>{
             const book = req.body
@@ -102,18 +98,42 @@ async function run (){
             res.send(books)
         })
       
+        
         app.get('/allbooks',async(req,res)=>{
-            const email = req.query.email
-           const query = {email}
+           const query = {}
             const books = await booksCollection.find(query).toArray()
             res.send(books)
+            console.log(books)
         })
+
+        app.get('/allbooks/:email',async(req,res)=>{
+                const email = req.params.email
+               const query = {email}
+                const books = await booksCollection.find(query).toArray()
+                res.send(books)
+            })
         app.delete('/allbooks/:id',async(req,res)=>{
             const id = req.params.id;
             const filter = { _id:ObjectId(id)};
             const result = await booksCollection.deleteOne(filter);
             res.send(result);
-            console.log(result)
+           
+        })
+
+        app.put('/allbooks/:id', async(req,res)=>
+        {
+           
+           const id = req.params.id;
+           const filter = ({_id:ObjectId(id)})
+           const options = { upsert: true };
+          
+           const updateDoc = {
+             $set: {
+              advertisement:'true'
+             },
+           };
+           const result = await booksCollection.updateOne(filter, updateDoc, options)
+           res.send(result)
         })
     }
     finally{
