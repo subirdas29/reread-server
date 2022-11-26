@@ -73,13 +73,6 @@ async function run (){
             res.send({ isAdmin :user?.role ==='admin' })
         })
 
-        app.get('/users/buyer/:email',async(req,res)=>
-        {
-            const email = req.params.email
-            const query = {email}
-            const user = await usersCollection.findOne(query)
-            res.send({ isBuyer :user?.role ==='User' })
-        })
         app.get('/users/seller/:email',async(req,res)=>
         {
             const email = req.params.email
@@ -103,8 +96,18 @@ async function run (){
             res.send(result);
             console.log(result)
         })
-        
+        app.post('/allbooks',async(req,res)=>{
+            const book = req.body
+            const books = await booksCollection.insertOne(book)
+            res.send(books)
+        })
       
+        app.get('/allbooks',async(req,res)=>{
+            const email = req.query.email
+           const query = {email}
+            const books = await booksCollection.find(query).toArray()
+            res.send(books)
+        })
     }
     finally{
 
