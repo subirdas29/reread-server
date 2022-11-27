@@ -11,6 +11,7 @@ app.use(express.json());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { query } = require('express');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1mua1t2.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -135,7 +136,65 @@ async function run (){
            const result = await booksCollection.updateOne(filter, updateDoc, options)
            res.send(result)
         })
+
+        app.get('/adbooks',async(req,res)=>
+        {
+            const ad = req.query.advertisement
+            const query = {advertisement:ad}
+            const result = await booksCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.patch('/allbooks/:email',async(req,res)=>
+        {
+            const email = req.params.email;
+           const filter = ({email})
+           console.log(email)
+        //    const options = { upsert: true };
+
+           const updateDoc = {
+             $set: {
+              status:'verified'
+             },
+           };
+           const result = await booksCollection.updateOne(filter, updateDoc)
+           res.send(result)
+          console.log(result)
+        })
+        app.patch('/users/allseller/:id',async(req,res)=>
+        {
+            const id = req.params.id;
+           const filter = ({_id:ObjectId(id)})
+        //    const options = { upsert: true };
+
+           const updateDoc = {
+             $set: {
+              status:'verified'
+             },
+           };
+           const result = await usersCollection.updateOne(filter, updateDoc)
+           res.send(result)
+          
+        })
+
+        // app.get('/users/allseller/:email'),async(req,res)=>{
+        //     const status = req.params.email;
+        //     const query=({email})
+        //     // const query = (status:status)
+        //     const result = await usersCollection.find(query).toArray()
+        //    res.send(result)
+
+        // }
+
+        app.get('/users/verifyseller',async(req,res)=>
+        {
+            const query = {status:"verified"}
+            const user = await usersCollection.find(query).toArray()
+           res.send(user)
+          
+        })
     }
+
     finally{
 
     }
