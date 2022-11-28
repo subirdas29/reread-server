@@ -147,7 +147,15 @@ async function run (){
             res.send(result)
         })
 
-        app.patch('/allbooks/:email',async(req,res)=>
+        app.get('/verifybookseller',async(req,res)=>{
+            const query = {}
+             const books = await booksCollection.find(query).toArray()
+             res.send(books)
+             console.log(books)
+         })
+ 
+
+        app.patch('/verifybookseller/:email',async(req,res)=>
         {
             const email = req.params.email;
            const filter = ({email})
