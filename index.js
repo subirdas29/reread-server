@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const port = process.env.PORT|| 5000;
+const jwt = require('jsonwebtoken');
 const app = express()
 require('dotenv').config()
 
@@ -16,6 +17,25 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
+function verifyJwt(req,res,next){
+    const authHeader = req.headers.authorization
+    console.log(authHeader)
+    if(!authHeader)
+    {
+       return res.status(401).send('unauthorized')
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN , function(err, decoded){
+        if(err)
+        {
+            return res.status(403).send({message:'forbidden access'})
+        }
+        req.decoded = decoded
+        next()
+    })
+} 
+
+
 async function run (){
 
     try{
@@ -24,6 +44,9 @@ async function run (){
         const booksCollection = client.db('reRead').collection('books')
         const usersCollection = client.db('reRead').collection('users')
         const myOrdersCollection = client.db('reRead').collection('myOrders')
+
+
+       
       
         app.get('/categories',async(req,res)=>{
             const query = {}
@@ -48,7 +71,22 @@ async function run (){
             res.send(result)
         })
 
-        app.get('/users/allbuyer',async(req,res)=>
+        app.get('/jwt',async(req,res)=>{
+            const email = req.query.email
+            const query ={
+                email:email
+            }
+            const user = await usersCollection.findOne(query)
+            if(user)
+            {
+                const token = jwt.sign({email},process.env.ACCESS_TOKEN, { expiresIn:'1D'} );
+                return res.send({accessToken:token})
+            }
+            res.status(403).send({accessToken:''})
+
+        })
+
+        app.get('/users/allbuyer',verifyJwt,async(req,res)=>
         {
             const query = {role:'User'}
             const user = await usersCollection.find(query).toArray()
@@ -56,7 +94,7 @@ async function run (){
            
         })
 
-        app.get('/users/allseller',async(req,res)=>
+        app.get('/users/allseller',verifyJwt,async(req,res)=>
         {
             const query = {role:'Seller'}
             const user = await usersCollection.find(query).toArray()
@@ -80,7 +118,7 @@ async function run (){
             res.send({ isSeller :user?.role ==='Seller' })
         })
 
-        app.delete('/users/allbuyer/:id', async (req, res) => {
+        app.delete('/users/allbuyer/:id',verifyJwt, async (req, res) => {
             const id = req.params.id;
             const filter = { _id:ObjectId(id)};
             const result = await usersCollection.deleteOne(filter);
@@ -88,14 +126,14 @@ async function run (){
         
         })
         
-        app.delete('/users/allseller/:id', async (req, res) => {
+        app.delete('/users/allseller/:id',verifyJwt, async (req, res) => {
             const id = req.params.id;
             const filter = { _id:ObjectId(id)};
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
           
         })
-        app.post('/allbooks',async(req,res)=>{
+        app.post('/allbooks',verifyJwt,async(req,res)=>{
             const book = req.body
             const books = await booksCollection.insertOne(book)
             res.send(books)
